@@ -1,61 +1,43 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+import pytest
+from app import app
 
-app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Replace with a secure key in production
+@pytest.fixture
+def client():
+    app.config['TESTING'] = True
+    with app.test_client() as client:
+        yield client
 
-# Dummy user data
-users = {
-    "john": {"password": "password123", "name": "John Doe"}
-}
+def test_home(client):
+    rv = client.get('/')
+    assert rv.status_code == 200
+    assert b"Welcome to ACEest Fitness and Gym!" in rv.data
 
-# Dummy workout data
-workouts = [
-    {"date": "2025-08-28", "exercise": "Bench Press", "reps": 10, "sets": 3},
-    {"date": "2025-08-28", "exercise": "Squats", "reps": 12, "sets": 4},
-]
+def test_get_members(client):
+    rv = client.get('/members')
+    assert rv.status_code == 200
+    members = rv.get_json()
+    assert isinstance(members, list)
+    assert len(members) >= 1
 
-# Dummy membership plans
-plans = [
-    {"name": "Basic Plan", "price": "$30/month"},
-    {"name": "Premium Plan", "price": "$50/month"},
-    {"name": "Pro Plan", "price": "$70/month"}
-]
+def test_get_member_success(client):
+    rv = client.get('/members/1')
+    assert rv.status_code == 200
+    member = rv.get_json()
+    assert member["name"] == "Alice"
 
-@app.route('/')
-def home():
-    return render_template('home.html')
+def test_get_member_not_found(client):
+    rv = client.get('/members/999')
+    assert rv.status_code == 404
+    assert rv.get_json()["error"] == "Member not found"
 
-@app.route('/login', methods=["GET", "POST"])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = users.get(username)
+def test_add_member_success(client):
+    rv = client.post('/members', json={"name": "David", "membership": "Premium"})
+    assert rv.status_code == 201
+    member = rv.get_json()
+    assert member["name"] == "David"
+    assert member["membership"] == "Premium"
 
-        if user and user['password'] == password:
-            session['username'] = username
-            flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Invalid credentials. Try again.', 'danger')
-    return render_template('login.html')
-
-@app.route('/logout')
-def logout():
-    session.pop('username', None)
-    flash('You have been logged out.', 'info')
-    return redirect(url_for('home'))
-
-@app.route('/dashboard')
-def dashboard():
-    if 'username' not in session:
-        flash('Please login to access the dashboard.', 'warning')
-        return redirect(url_for('login'))
-    return render_template('dashboard.html', workouts=workouts)
-
-@app.route('/plans')
-def view_plans():
-    return render_template('plans.html', plans=plans)
-
-if __name__ == '__main__':
-    app.run(debug=True)
+def test_add_member_invalid(client):
+    rv = client.post('/members', json={})
+    assert rv.status_code == 400
+    assert rv.get_json()["error"] == "Invalid data"
