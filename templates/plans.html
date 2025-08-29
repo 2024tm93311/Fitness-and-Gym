@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><title>Membership Plans</title></head>
+<body>
+    <h2>Available Membership Plans</h2>
+    <ul>
+        {% for plan in plans %}
+            <li>{{ plan.name }} - {{ plan.price }}</li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('home') }}">Back to Home</a>
+</body>
+</html>

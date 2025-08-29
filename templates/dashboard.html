@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head><title>Dashboard</title></head>
+<body>
+    <h2>Welcome to your Dashboard</h2>
+    <p>Workout History:</p>
+    <ul>
+        {% for workout in workouts %}
+            <li>{{ workout.date }} - {{ workout.exercise }}: {{ workout.reps }} reps x {{ workout.sets }} sets</li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('logout') }}">Logout</a>
+</body>
+</html>
