@@ -1,70 +1,69 @@
-# ACEest Fitness and Gym - DevOps Project
+# ACEest Fitness & Gym – Flask API (DevOps Assignment)
 
-## Overview
-
-This project demonstrates a complete DevOps workflow for a basic fitness/gym management system using Flask, Docker, Pytest, and GitHub Actions.
+A minimal Flask application demonstrating core DevOps workflows: Git, Pytest, Docker, and GitHub Actions CI.
 
 ## Features
+- **API endpoints**
+  - `GET /` – service info
+  - `GET /health` – health probe
+  - `POST /bmi` – BMI calculator: `{ "weight_kg": 70, "height_cm": 175 }`
+  - `GET /members` – list members
+  - `POST /members` – add member: `{ "name": "Riya", "age": 28 }`
 
-- Flask REST API with endpoints for viewing and adding gym members.
-- Unit tests for all endpoints using Pytest.
-- Dockerfile for containerization.
-- Automated CI/CD pipeline using GitHub Actions.
-
-## Setup & Local Run
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/aceest-fitness.git
-   cd aceest-fitness
-   ```
-
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Run the Flask app**
-   ```bash
-   python app.py
-   ```
-   The app runs on [http://localhost:5000](http://localhost:5000).
-
-## Running Tests
-
-- Locally:
-  ```bash
-  pytest test_app.py
-  ```
-
-## Docker Usage
-
-- **Build the Docker image**
-  ```bash
-  docker build -t aceest-fitness .
-  ```
-
-- **Run the container**
-  ```bash
-  docker run -p 5000:5000 aceest-fitness
-  ```
-
-- **Run tests inside Docker**
-  ```bash
-  docker run --rm aceest-fitness pytest test_app.py
-  ```
-
-## GitHub Actions Pipeline
-
-- On every push, the pipeline will:
-  1. Checkout code
-  2. Set up Python and dependencies
-  3. Run Pytest unit tests
-  4. Build Docker image
-  5. Run tests inside Docker
-
-You can view the workflow and its status under the **Actions** tab in your GitHub repository.
+- **Tests** with `pytest` for endpoints and BMI logic
+- **Docker** multi-stage build for runtime and test
+- **GitHub Actions** pipeline:
+  1. Install deps & run `pytest` (fast local check)
+  2. Build Docker images (`runtime` & `test`)
+  3. Run tests **inside** the Docker image
 
 ---
 
-**Make sure your repository is public and contains all files above for submission.**
+## Local setup
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+python app.py
+# App will be at http://127.0.0.1:8000
+```
+
+### Run tests locally
+```bash
+pytest -q
+```
+
+## Docker
+
+Build and run runtime image:
+```bash
+docker build --target runtime -t aceest/fitness-api:runtime .
+docker run --rm -p 8000:8000 aceest/fitness-api:runtime
+```
+
+Run tests **in Docker**:
+```bash
+docker build --target test -t aceest/fitness-api:test .
+docker run --rm aceest/fitness-api:test
+```
+
+## Git & GitHub
+
+```bash
+git init
+git add .
+git commit -m "Initial commit: Flask app, tests, Docker, CI"
+git branch -M main
+git remote add origin https://github.com/<your-username>/<your-repo>.git
+git push -u origin main
+```
+
+Once pushed, GitHub Actions will trigger automatically. Check **Actions** tab for green checks.
+
+---
+
+## Notes
+- Default port is **8000**.
+- The app uses in-memory storage for demo purposes.
+- For production, attach a real database and add authentication.
